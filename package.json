@@ -1,0 +1,31 @@
+{
+  "name": "jev-kit",
+  "private": true,
+  "description": "Versioned Jev decision contracts, routing, evaluation, semantic diffing and evidence checking.",
+  "license": "MIT",
+  "type": "module",
+  "packageManager": "pnpm@8.15.4",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/keiffff/jev-kit.git"
+  },
+  "workspaces": ["packages/*"],
+  "engines": {
+    "node": ">=22.6"
+  },
+  "scripts": {
+    "build": "tsc -b",
+    "clean": "tsc -b --clean",
+    "test": "node --test packages/*/test/*.test.ts",
+    "check": "pnpm build && pnpm test",
+    "pack:check": "node scripts/verify-packages.mjs",
+    "changeset": "changeset",
+    "version-packages": "changeset version",
+    "release": "pnpm check && pnpm pack:check && changeset publish"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^3.0.3",
+    "@types/node": "^26.6.2",
+    "typescript": "^7.0.2"
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "name": "@jev-kit/evidence-check",
+  "version": "0.0.0",
+  "description": "Measure how supplied evidence supports or contradicts an exact claim with Jev.",
+  "license": "MIT",
+  "type": "module",
+  "repository": { "type": "git", "url": "git+https://github.com/keiffff/jev-kit.git", "directory": "packages/evidence-check" },
+  "homepage": "https://github.com/keiffff/jev-kit#readme",
+  "bugs": { "url": "https://github.com/keiffff/jev-kit/issues" },
+  "engines": { "node": ">=22.6" },
+  "publishConfig": { "access": "public", "registry": "https://registry.npmjs.org/" },
+  "files": ["dist/**/*.js", "dist/**/*.d.ts", "dist/**/*.map"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "dependencies": {
+    "@jev-kit/decision-contract": "workspace:*"
+  },
+  "scripts": {
+    "build": "tsc -b"
+  }
+}

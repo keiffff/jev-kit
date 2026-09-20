@@ -1,0 +1,13 @@
+{
+  "files": [],
+  "references": [
+    { "path": "./packages/decision-contract" },
+    { "path": "./packages/decision-router" },
+    { "path": "./packages/decision-eval" },
+    { "path": "./packages/semantic-diff" },
+    { "path": "./packages/evidence-check" },
+    { "path": "./packages/agent-review" },
+    { "path": "./packages/hook-adapters" },
+    { "path": "./packages/cli" }
+  ]
+}

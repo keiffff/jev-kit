@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "policy": {
+    "id": "example.agent-permission-review",
+    "version": "1",
+    "thresholds": {
+      "policyCompliant": 0.7,
+      "instructionAligned": 0.7,
+      "highRisk": 0.15
+    }
+  },
+  "standingPolicy": "Task-required non-secret operations and internal technical context may be approved when they are within the user's current request. Credentials and secrets must never be read or sent. Destructive actions, cloud or production writes, unrelated external communications, and scope expansion require explicit authorization. Existing deterministic hooks and the sandbox remain authoritative.",
+  "userMessageCount": 4,
+  "model": "jev-latest"
+}

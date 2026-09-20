@@ -1,0 +1,22 @@
+{
+  "name": "@jev-kit/decision-eval",
+  "version": "0.0.0",
+  "description": "Measure false positives and false negatives on labeled decision fixtures.",
+  "license": "MIT",
+  "type": "module",
+  "repository": { "type": "git", "url": "git+https://github.com/keiffff/jev-kit.git", "directory": "packages/decision-eval" },
+  "homepage": "https://github.com/keiffff/jev-kit#readme",
+  "bugs": { "url": "https://github.com/keiffff/jev-kit/issues" },
+  "engines": { "node": ">=22.6" },
+  "publishConfig": { "access": "public", "registry": "https://registry.npmjs.org/" },
+  "files": ["dist/**/*.js", "dist/**/*.d.ts", "dist/**/*.map"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -b"
+  }
+}

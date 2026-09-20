@@ -1,0 +1,131 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" width="1600" height="900" font-family="Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" fill="#F4F6FB">
+<defs>
+  <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#090C14"/><stop offset="1" stop-color="#111525"/></linearGradient>
+  <radialGradient id="halo" cx="0.55" cy="0.42" r="0.52"><stop offset="0" stop-color="#8B5CF6" stop-opacity="0.15"/><stop offset="1" stop-color="#8B5CF6" stop-opacity="0"/></radialGradient>
+  <pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse"><path d="M32 0H0V32" fill="none" stroke="#20263A" stroke-width="1" stroke-opacity="0.58"/></pattern>
+  <filter id="shadow" x="-15%" y="-20%" width="130%" height="150%"><feDropShadow dx="0" dy="12" stdDeviation="18" flood-color="#000" flood-opacity="0.32"/></filter>
+  <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M1 1l8 4-8 4" fill="none" stroke="#7C8AA8" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></marker>
+  <marker id="arrow-violet" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M1 1l8 4-8 4" fill="none" stroke="#A78BFA" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></marker>
+  <marker id="arrow-green" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M1 1l8 4-8 4" fill="none" stroke="#34D399" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></marker>
+</defs>
+
+<rect width="1600" height="900" fill="url(#bg)"/>
+<rect width="1600" height="900" fill="url(#grid)"/>
+<rect width="1600" height="900" fill="url(#halo)"/>
+
+<g transform="translate(80 58)">
+  <rect width="48" height="48" rx="13" fill="#8B5CF6" fill-opacity="0.15" stroke="#A78BFA" stroke-opacity="0.72"/>
+  <path d="M14 16h20M14 24h12M14 32h16" fill="none" stroke="#C4B5FD" stroke-width="2.2" stroke-linecap="round"/>
+</g>
+<text x="146" y="91" font-size="42" font-weight="760" letter-spacing="-1.2">jev-kit</text>
+<text x="80" y="139" font-size="20" fill="#A4AEC2">Typed decision infrastructure for AI agents and application control flow.</text>
+<rect x="80" y="163" width="352" height="30" rx="15" fill="#8B5CF6" fill-opacity="0.09" stroke="#8B5CF6" stroke-opacity="0.34"/>
+<text x="256" y="183" text-anchor="middle" font-size="13" font-weight="700" letter-spacing="1.15" fill="#C4B5FD">VERSIONED · VALIDATED · MEASURABLE</text>
+
+<rect x="742" y="198" width="260" height="64" rx="32" fill="#141827" stroke="#4B556E"/>
+<circle cx="772" cy="230" r="12" fill="#8B5CF6" fill-opacity="0.14" stroke="#A78BFA"/>
+<path d="M767 230h10M772 225v10" stroke="#C4B5FD" stroke-width="1.6" stroke-linecap="round"/>
+<text x="794" y="224" font-size="13.5" font-weight="700" fill="#C4B5FD">JEV</text>
+<text x="794" y="246" font-size="12.5" fill="#8995AD">official TypeSafe SDK · one attempt</text>
+<path d="M872 262V280" fill="none" stroke="#A78BFA" stroke-width="1.6" marker-end="url(#arrow-violet)"/>
+
+<text x="80" y="270" font-size="13" font-weight="700" letter-spacing="2" fill="#69758F">DECISION PATH</text>
+
+<rect x="80" y="290" width="260" height="292" rx="18" fill="#111624" stroke="#30384E" filter="url(#shadow)"/>
+<text x="106" y="324" font-size="12.5" font-weight="700" letter-spacing="1.6" fill="#71809D">CALLERS</text>
+<text x="106" y="356" font-size="22" font-weight="720">Structured inputs</text>
+<line x1="106" y1="375" x2="314" y2="375" stroke="#283047"/>
+
+<rect x="106" y="397" width="208" height="42" rx="10" fill="#171D2D" stroke="#343E57"/>
+<circle cx="126" cy="418" r="6" fill="#A78BFA"/><text x="144" y="423" font-size="14.5" font-weight="650">Codex / Claude hooks</text>
+<rect x="106" y="451" width="208" height="42" rx="10" fill="#171D2D" stroke="#343E57"/>
+<circle cx="126" cy="472" r="6" fill="#60A5FA"/><text x="144" y="477" font-size="14.5" font-weight="650">TypeScript applications</text>
+<rect x="106" y="505" width="208" height="42" rx="10" fill="#171D2D" stroke="#343E57"/>
+<circle cx="126" cy="526" r="6" fill="#94A3B8"/><text x="144" y="531" font-size="14.5" font-weight="650">JSON / CLI callers</text>
+
+<line x1="348" y1="426" x2="382" y2="426" stroke="#7C8AA8" stroke-width="1.8" marker-end="url(#arrow)"/>
+
+<rect x="390" y="290" width="250" height="292" rx="18" fill="#111624" stroke="#30384E" filter="url(#shadow)"/>
+<text x="416" y="324" font-size="12.5" font-weight="700" letter-spacing="1.55" fill="#71809D">EDGE NORMALIZATION</text>
+<text x="416" y="356" font-size="22" font-weight="720">Normalize inputs</text>
+<line x1="416" y1="375" x2="614" y2="375" stroke="#283047"/>
+
+<rect x="416" y="395" width="198" height="64" rx="11" fill="#171D2D" stroke="#6954A8"/>
+<text x="436" y="420" font-size="14" font-weight="700" fill="#C4B5FD">hook-adapters</text>
+<text x="436" y="445" font-size="13" fill="#8E9AB0">agent-native payloads</text>
+<rect x="416" y="465" width="198" height="64" rx="11" fill="#171D2D" stroke="#3F5E82"/>
+<text x="436" y="490" font-size="14" font-weight="700" fill="#93C5FD">cli</text>
+<text x="436" y="515" font-size="13" fill="#8E9AB0">JSON stdin / stdout</text>
+<text x="416" y="550" font-size="12.5" fill="#77839C">Canonical request at the core edge</text>
+
+<line x1="648" y1="426" x2="682" y2="426" stroke="#A78BFA" stroke-width="1.8" marker-end="url(#arrow-violet)"/>
+
+<rect x="690" y="280" width="390" height="302" rx="20" fill="#171329" stroke="#8B5CF6" stroke-width="1.5" filter="url(#shadow)"/>
+<text x="718" y="316" font-size="12.5" font-weight="700" letter-spacing="1.55" fill="#A78BFA">VERSIONED DECISION CORE</text>
+<text x="718" y="352" font-size="27" font-weight="760">decision-contract</text>
+<text x="718" y="379" font-size="14.5" fill="#A4AEC2">Stable boundary for probabilistic judgment</text>
+<line x1="718" y1="400" x2="1052" y2="400" stroke="#3E315F"/>
+
+<rect x="718" y="423" width="150" height="48" rx="11" fill="#8B5CF6" fill-opacity="0.10" stroke="#8B5CF6" stroke-opacity="0.46"/>
+<text x="793" y="442" text-anchor="middle" font-size="13" font-weight="700" fill="#D8CCFF">Contract identity</text>
+<text x="793" y="462" text-anchor="middle" font-size="12" fill="#8E9AB0">ID + version</text>
+<rect x="884" y="423" width="168" height="48" rx="11" fill="#8B5CF6" fill-opacity="0.10" stroke="#8B5CF6" stroke-opacity="0.46"/>
+<text x="968" y="442" text-anchor="middle" font-size="13" font-weight="700" fill="#D8CCFF">Answer schema</text>
+<text x="968" y="462" text-anchor="middle" font-size="12" fill="#8E9AB0">keys · types · ranges</text>
+
+<rect x="718" y="483" width="334" height="66" rx="12" fill="#0F1320" stroke="#5B477F"/>
+<path d="M740 517l8 8 14-17" fill="none" stroke="#34D399" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="778" y="507" font-size="14" font-weight="700">Runtime validation before routing</text>
+<text x="778" y="535" font-size="12.5" fill="#8E9AB0">Malformed answers never reach application code</text>
+
+<line x1="1088" y1="426" x2="1122" y2="426" stroke="#A78BFA" stroke-width="1.8" marker-end="url(#arrow-violet)"/>
+
+<rect x="1130" y="290" width="390" height="292" rx="18" fill="#111624" stroke="#30384E" filter="url(#shadow)"/>
+<text x="1156" y="324" font-size="12.5" font-weight="700" letter-spacing="1.45" fill="#71809D">APPLICATION-OWNED ROUTING</text>
+<text x="1156" y="352" font-size="22" font-weight="720">decision-router</text>
+<text x="1156" y="378" font-size="14" fill="#A4AEC2">Select a named path or return defer</text>
+<line x1="1156" y1="397" x2="1494" y2="397" stroke="#283047"/>
+
+<rect x="1156" y="410" width="338" height="54" rx="12" fill="#0E211D" stroke="#26765E"/>
+<circle cx="1180" cy="437" r="9" fill="#34D399" fill-opacity="0.16" stroke="#34D399"/>
+<path d="M1176 437l3 3 5-6" fill="none" stroke="#6EE7B7" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="1202" y="431" font-size="14.5" font-weight="700" fill="#6EE7B7">Selected path</text>
+<text x="1202" y="453" font-size="13" fill="#8E9AB0">caller policy accepts the score</text>
+
+<rect x="1156" y="476" width="338" height="54" rx="12" fill="#171D2D" stroke="#48546E"/>
+<circle cx="1180" cy="503" r="9" fill="#94A3B8" fill-opacity="0.12" stroke="#94A3B8"/>
+<path d="M1176 503h8" stroke="#CBD5E1" stroke-width="1.6" stroke-linecap="round"/>
+<text x="1202" y="497" font-size="14.5" font-weight="700" fill="#CBD5E1">Explicit defer</text>
+<text x="1202" y="519" font-size="13" fill="#8E9AB0">existing review or fallback stays in control</text>
+<text x="1156" y="550" font-size="12.5" fill="#77839C">The application owns thresholds and side effects</text>
+
+<text x="80" y="632" font-size="13" font-weight="700" letter-spacing="2" fill="#69758F">MEASURE &amp; EXTEND</text>
+<line x1="238" y1="627" x2="1520" y2="627" stroke="#252C40"/>
+
+<rect x="80" y="656" width="453" height="164" rx="16" fill="#101522" stroke="#2D354B"/>
+<circle cx="111" cy="691" r="15" fill="#34D399" fill-opacity="0.10" stroke="#34D399" stroke-opacity="0.55"/>
+<path d="M104 696l5-7 5 4 6-9" fill="none" stroke="#6EE7B7" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="140" y="688" font-size="12.5" font-weight="700" letter-spacing="1.25" fill="#6EE7B7">CALIBRATE</text>
+<text x="140" y="714" font-size="20" font-weight="720">decision-eval</text>
+<text x="106" y="752" font-size="14" fill="#A4AEC2">Test labeled fixtures at caller-owned thresholds.</text>
+<text x="106" y="779" font-size="13" fill="#77839C">False positives and false negatives stay visible.</text>
+
+<rect x="573" y="656" width="453" height="164" rx="16" fill="#101522" stroke="#2D354B"/>
+<circle cx="604" cy="691" r="15" fill="#60A5FA" fill-opacity="0.10" stroke="#60A5FA" stroke-opacity="0.55"/>
+<path d="M596 691h16M604 683v16" stroke="#93C5FD" stroke-width="1.7" stroke-linecap="round"/>
+<text x="633" y="688" font-size="12.5" font-weight="700" letter-spacing="1.25" fill="#93C5FD">COMPARE</text>
+<text x="633" y="714" font-size="20" font-weight="720">semantic-diff</text>
+<text x="599" y="752" font-size="14" fill="#A4AEC2">Detect caller-defined semantic changes.</text>
+<text x="599" y="779" font-size="13" fill="#77839C">Dimensions, IDs and versions remain explicit.</text>
+
+<rect x="1067" y="656" width="453" height="164" rx="16" fill="#101522" stroke="#2D354B"/>
+<circle cx="1098" cy="691" r="15" fill="#FBBF24" fill-opacity="0.10" stroke="#FBBF24" stroke-opacity="0.55"/>
+<path d="M1091 691h14M1098 684v14" stroke="#FCD34D" stroke-width="1.7" stroke-linecap="round"/>
+<text x="1127" y="688" font-size="12.5" font-weight="700" letter-spacing="1.2" fill="#FCD34D">CHECK EVIDENCE</text>
+<text x="1127" y="714" font-size="20" font-weight="720">evidence-check</text>
+<text x="1093" y="752" font-size="14" fill="#A4AEC2">Measure support and contradiction for a claim.</text>
+<text x="1093" y="779" font-size="13" fill="#77839C">The caller still decides whether to adopt it.</text>
+
+<text x="80" y="862" font-size="12.5" fill="#66728B">Probabilistic judgment in. Typed, reviewable control flow out.</text>
+<text x="1520" y="862" text-anchor="end" font-size="12.5" fill="#66728B">@jev-kit/*</text>
+</svg>

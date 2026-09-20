@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://jev-kit.dev/schemas/agent-review-result-v1.json",
+  "title": "Jev Kit Agent Review Result v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "outcome", "reason", "contract"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "outcome": { "enum": ["allow", "defer"] },
+    "reason": { "enum": ["policy-allowed", "policy-threshold-not-met", "context-unavailable", "sensitive-input", "provider-unavailable"] },
+    "contract": {
+      "type": "object", "additionalProperties": false, "required": ["id", "version"],
+      "properties": { "id": { "type": "string" }, "version": { "type": "string" } }
+    },
+    "scores": {
+      "type": "object", "additionalProperties": false,
+      "required": ["policyCompliant", "instructionAligned", "highRisk"],
+      "properties": {
+        "policyCompliant": { "type": "number", "minimum": 0, "maximum": 1 },
+        "instructionAligned": { "type": "number", "minimum": 0, "maximum": 1 },
+        "highRisk": { "type": "number", "minimum": 0, "maximum": 1 }
+      }
+    },
+    "model": { "type": "string" },
+    "usage": {
+      "type": "object", "additionalProperties": false, "required": ["input_tokens", "output_tokens"],
+      "properties": { "input_tokens": { "type": "integer", "minimum": 0 }, "output_tokens": { "type": "integer", "minimum": 0 } }
+    },
+    "errorKind": { "type": "string" }
+  }
+}

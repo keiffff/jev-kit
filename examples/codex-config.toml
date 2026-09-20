@@ -1,0 +1,10 @@
+# Install @jev-kit/cli so jev-agent-review is on PATH, then replace the
+# credential injector and policy paths with local absolute paths.
+[[hooks.PermissionRequest]]
+matcher = ".*"
+
+[[hooks.PermissionRequest.hooks]]
+type = "command"
+command = "/absolute/path/to/keychain-env-exec TYPESAFE_API_KEY JEV_PERMISSION_REVIEW_API_KEY -- jev-agent-review --adapter codex-permission --config /absolute/path/to/agent-review-policy.json --status-file /absolute/path/to/status.json"
+timeout = 4
+statusMessage = "Checking approval with Jev"

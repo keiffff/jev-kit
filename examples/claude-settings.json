@@ -1,0 +1,17 @@
+{
+  "hooks": {
+    "PermissionRequest": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jev-agent-review --adapter claude-permission --config /absolute/path/to/agent-review-policy.json --status-file /absolute/path/to/status.json",
+            "timeout": 4,
+            "statusMessage": "Checking approval with Jev"
+          }
+        ]
+      }
+    ]
+  }
+}

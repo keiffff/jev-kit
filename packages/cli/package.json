@@ -1,0 +1,21 @@
+{
+  "name": "@jev-kit/cli",
+  "version": "0.0.0",
+  "description": "Run Jev Kit agent review over JSON stdin for hooks, scripts and non-TypeScript agents.",
+  "license": "MIT",
+  "type": "module",
+  "repository": { "type": "git", "url": "git+https://github.com/keiffff/jev-kit.git", "directory": "packages/cli" },
+  "homepage": "https://github.com/keiffff/jev-kit#readme",
+  "bugs": { "url": "https://github.com/keiffff/jev-kit/issues" },
+  "engines": { "node": ">=22.6" },
+  "publishConfig": { "access": "public", "registry": "https://registry.npmjs.org/" },
+  "files": ["dist/**/*.js", "dist/**/*.d.ts", "dist/**/*.map"],
+  "bin": { "jev-agent-review": "./dist/cli.js" },
+  "exports": { ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" } },
+  "dependencies": {
+    "@jev-kit/agent-review": "workspace:*",
+    "@jev-kit/decision-contract": "workspace:*",
+    "@jev-kit/hook-adapters": "workspace:*"
+  },
+  "scripts": { "build": "tsc -b" }
+}

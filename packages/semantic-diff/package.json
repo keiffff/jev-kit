@@ -1,0 +1,25 @@
+{
+  "name": "@jev-kit/semantic-diff",
+  "version": "0.0.0",
+  "description": "Detect caller-defined semantic changes between a baseline and candidate with Jev.",
+  "license": "MIT",
+  "type": "module",
+  "repository": { "type": "git", "url": "git+https://github.com/keiffff/jev-kit.git", "directory": "packages/semantic-diff" },
+  "homepage": "https://github.com/keiffff/jev-kit#readme",
+  "bugs": { "url": "https://github.com/keiffff/jev-kit/issues" },
+  "engines": { "node": ">=22.6" },
+  "publishConfig": { "access": "public", "registry": "https://registry.npmjs.org/" },
+  "files": ["dist/**/*.js", "dist/**/*.d.ts", "dist/**/*.map"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "dependencies": {
+    "@jev-kit/decision-contract": "workspace:*"
+  },
+  "scripts": {
+    "build": "tsc -b"
+  }
+}

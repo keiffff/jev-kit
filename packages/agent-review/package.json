@@ -1,0 +1,23 @@
+{
+  "name": "@jev-kit/agent-review",
+  "version": "0.0.0",
+  "description": "Evaluate AI agent tool requests against a versioned Jev permission-review policy.",
+  "license": "MIT",
+  "type": "module",
+  "repository": { "type": "git", "url": "git+https://github.com/keiffff/jev-kit.git", "directory": "packages/agent-review" },
+  "homepage": "https://github.com/keiffff/jev-kit#readme",
+  "bugs": { "url": "https://github.com/keiffff/jev-kit/issues" },
+  "engines": { "node": ">=22.6" },
+  "publishConfig": { "access": "public", "registry": "https://registry.npmjs.org/" },
+  "files": ["dist/**/*.js", "dist/**/*.d.ts", "dist/**/*.map", "schemas"],
+  "exports": {
+    ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" },
+    "./schemas/review-request.json": "./schemas/review-request.schema.json",
+    "./schemas/review-result.json": "./schemas/review-result.schema.json"
+  },
+  "dependencies": {
+    "@jev-kit/decision-contract": "workspace:*",
+    "@jev-kit/decision-router": "workspace:*"
+  },
+  "scripts": { "build": "tsc -b" }
+}

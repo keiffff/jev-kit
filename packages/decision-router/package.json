@@ -1,0 +1,25 @@
+{
+  "name": "@jev-kit/decision-router",
+  "version": "0.0.0",
+  "description": "Route application control flow from a Jev decision or return an explicit defer reason.",
+  "license": "MIT",
+  "type": "module",
+  "repository": { "type": "git", "url": "git+https://github.com/keiffff/jev-kit.git", "directory": "packages/decision-router" },
+  "homepage": "https://github.com/keiffff/jev-kit#readme",
+  "bugs": { "url": "https://github.com/keiffff/jev-kit/issues" },
+  "engines": { "node": ">=22.6" },
+  "publishConfig": { "access": "public", "registry": "https://registry.npmjs.org/" },
+  "files": ["dist/**/*.js", "dist/**/*.d.ts", "dist/**/*.map"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "dependencies": {
+    "@jev-kit/decision-contract": "workspace:*"
+  },
+  "scripts": {
+    "build": "tsc -b"
+  }
+}
