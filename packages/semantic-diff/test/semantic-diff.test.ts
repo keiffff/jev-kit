@@ -36,7 +36,9 @@ test("returns exactly one score per versioned custom dimension", async () => {
 
   assert.deepEqual(sentState, { before: "old", after: "new" });
   assert.deepEqual(result.scores, { meaning: 0.1, runtime: 0.9 });
-  assert.deepEqual(result.response.contract, { id: "my-product.diff", version: "2026-09" });
+  assert.equal(result.response.contract.id, "my-product.diff");
+  assert.equal(result.response.contract.version, "2026-09");
+  assert.match(result.response.contract.fingerprint, /^sha256:[a-f0-9]{64}$/);
 });
 
 test("rejects duplicate dimension ids before calling Jev", () => {

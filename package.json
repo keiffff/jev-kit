@@ -19,6 +19,7 @@
     "test": "node --test packages/*/test/*.test.ts",
     "check": "pnpm build && pnpm test",
     "pack:check": "node scripts/verify-packages.mjs",
+    "eval:agent-review": "pnpm build && node scripts/run-agent-review-eval.mjs",
     "changeset": "changeset",
     "version-packages": "changeset version",
     "release": "pnpm check && pnpm pack:check && changeset publish"
