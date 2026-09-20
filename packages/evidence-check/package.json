@@ -1,6 +1,6 @@
 {
   "name": "@jev-kit/evidence-check",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Measure how supplied evidence supports or contradicts an exact claim with Jev.",
   "license": "MIT",
   "type": "module",

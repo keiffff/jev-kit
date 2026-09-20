@@ -1,6 +1,6 @@
 {
   "name": "@jev-kit/cli",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Run Jev Kit agent review over JSON stdin for hooks, scripts and non-TypeScript agents.",
   "license": "MIT",
   "type": "module",

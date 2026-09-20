@@ -1,6 +1,6 @@
 {
   "name": "@jev-kit/agent-review",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Evaluate AI agent tool requests against a versioned Jev permission-review policy.",
   "license": "MIT",
   "type": "module",
