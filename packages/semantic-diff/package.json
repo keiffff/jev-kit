@@ -1,6 +1,6 @@
 {
   "name": "@jev-kit/semantic-diff",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Detect caller-defined semantic changes between a baseline and candidate with Jev.",
   "license": "MIT",
   "type": "module",
