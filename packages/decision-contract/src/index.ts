@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import {
   APIConnectionError,
   APIError,
@@ -26,13 +27,26 @@ export type {
 export interface DecisionContract<Id extends string = string, Version extends string = string, Q extends Questions = Questions> {
   readonly id: Id;
   readonly version: Version;
+  readonly fingerprint: string;
   readonly questions: Q;
 }
+
+export type DecisionContractDefinition<
+  Id extends string = string,
+  Version extends string = string,
+  Q extends Questions = Questions,
+> = Omit<DecisionContract<Id, Version, Q>, "fingerprint">;
+
+export type DecisionContractIdentity = Pick<DecisionContract, "id" | "version" | "fingerprint">;
 
 export type AnswersFor<Q extends Questions> = { readonly [K in keyof Q]: ResultFor<Q[K]> };
 
 export interface DecisionResult<C extends DecisionContract> {
-  readonly contract: { readonly id: C["id"]; readonly version: C["version"] };
+  readonly contract: {
+    readonly id: C["id"];
+    readonly version: C["version"];
+    readonly fingerprint: C["fingerprint"];
+  };
   readonly model: string;
   readonly answers: AnswersFor<C["questions"]>;
   readonly usage: SystemOneResult<C["questions"]>["usage"];
@@ -68,18 +82,36 @@ export class JevEvaluationError extends Error {
 }
 
 export function defineContract<const Id extends string, const Version extends string, const Q extends Questions>(
-  contract: DecisionContract<Id, Version, Q>,
+  contract: DecisionContractDefinition<Id, Version, Q>,
 ): DecisionContract<Id, Version, Q> {
   if (contract.id.trim() === "") throw new InvalidDecisionContractError("contract id must not be empty");
   if (contract.version.trim() === "") throw new InvalidDecisionContractError("contract version must not be empty");
   if (Object.keys(contract.questions).length === 0) {
     throw new InvalidDecisionContractError("contract must contain at least one question");
   }
+  const questions = cloneAndFreeze(contract.questions);
   return Object.freeze({
     id: contract.id,
     version: contract.version,
-    questions: Object.freeze({ ...contract.questions }) as Q,
+    fingerprint: fingerprintContract(contract.id, contract.version, questions),
+    questions,
   });
+}
+
+/** Fails when a contract reuses an ID and version for different semantics. */
+export function assertContractVersioning(
+  previous: DecisionContractIdentity,
+  current: DecisionContractIdentity,
+): void {
+  if (
+    previous.id === current.id
+    && previous.version === current.version
+    && previous.fingerprint !== current.fingerprint
+  ) {
+    throw new InvalidDecisionContractError(
+      `contract ${current.id}@${current.version} changed without a version change`,
+    );
+  }
 }
 
 export interface SystemOneClient {
@@ -129,12 +161,50 @@ export class JevClient {
       throw normalizeEvaluationError(error);
     }
     return {
-      contract: { id: input.contract.id, version: input.contract.version },
+      contract: {
+        id: input.contract.id,
+        version: input.contract.version,
+        fingerprint: input.contract.fingerprint,
+      },
       model: result.model,
       answers: result.answers,
       usage: result.usage,
     };
   }
+}
+
+function fingerprintContract(id: string, version: string, questions: Questions): string {
+  const canonical = canonicalJson({ id, version, questions });
+  return `sha256:${createHash("sha256").update(canonical).digest("hex")}`;
+}
+
+function canonicalJson(value: unknown): string {
+  return JSON.stringify(sortForCanonicalJson(value));
+}
+
+function sortForCanonicalJson(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(sortForCanonicalJson);
+  if (typeof value === "object" && value !== null) {
+    return Object.fromEntries(
+      Object.entries(value)
+        .sort(([left], [right]) => left < right ? -1 : left > right ? 1 : 0)
+        .map(([key, item]) => [key, sortForCanonicalJson(item)]),
+    );
+  }
+  return value;
+}
+
+function cloneAndFreeze<T>(value: T): T {
+  if (Array.isArray(value)) {
+    return Object.freeze(value.map((item) => cloneAndFreeze(item))) as T;
+  }
+  if (typeof value === "object" && value !== null) {
+    const clone = Object.fromEntries(
+      Object.entries(value).map(([key, item]) => [key, cloneAndFreeze(item)]),
+    );
+    return Object.freeze(clone) as T;
+  }
+  return value;
 }
 
 function normalizeEvaluationError(error: unknown): JevEvaluationError {

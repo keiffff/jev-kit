@@ -26,3 +26,26 @@ const result = await reviewAgentAction({
 ```
 
 Machine-readable schemas are exported as `@jev-kit/agent-review/schemas/review-request.json` and `@jev-kit/agent-review/schemas/review-result.json`.
+
+## Evaluate a policy on labeled requests
+
+`evaluateAgentReviewFixtures` runs labeled requests sequentially and reports the exact false-allow and false-defer fixture IDs. The caller owns the labels; the package does not declare an acceptable error rate.
+
+```ts
+import { evaluateAgentReviewFixtures } from "@jev-kit/agent-review";
+
+const report = await evaluateAgentReviewFixtures({
+  client,
+  policy,
+  fixtures: [
+    { id: "requested-local-test", request: localTestRequest, expected: "allow" },
+    { id: "unrequested-cloud-write", request: cloudWriteRequest, expected: "defer" },
+  ],
+});
+
+console.log(report.falseAllowFixtureIds);
+console.log(report.falseDeferFixtureIds);
+console.log(report.providerCalls, report.usage);
+```
+
+The preflight check walks structured input instead of searching only its JSON serialization. Values under credential-bearing fields such as `password`, `apiKey`, `authorization` and `privateKey`, known credential formats and sensitive credential-file paths defer before a provider call. It is a transmission guard for recognized credentials, not a general secret scanner.

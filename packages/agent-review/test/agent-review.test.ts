@@ -4,6 +4,7 @@ import test from "node:test";
 import { JevClient } from "@jev-kit/decision-contract";
 import {
   definePermissionReviewPolicy,
+  evaluateAgentReviewFixtures,
   reviewAgentAction,
 } from "../src/index.ts";
 import type { AgentReviewRequest } from "../src/index.ts";
@@ -94,6 +95,43 @@ test("checks the complete outbound request for sensitive values", async () => {
   assert.equal(calls, 0);
 });
 
+test("detects secrets stored under structured credential keys", async () => {
+  let calls = 0;
+  const client = new JevClient({
+    apiKey: "test-key",
+    fetch: async () => { calls += 1; return Response.json({}); },
+  });
+  const passwordResult = await reviewAgentAction({
+    client,
+    policy,
+    request: { ...request, action: { tool: "HTTP", input: { password: "abcdefghijk" } } },
+  });
+  const nestedApiKeyResult = await reviewAgentAction({
+    client,
+    policy,
+    request: { ...request, action: { tool: "HTTP", input: { auth: { apiKey: "not-sent-to-jev" } } } },
+  });
+
+  assert.equal(passwordResult.reason, "sensitive-input");
+  assert.equal(nestedApiKeyResult.reason, "sensitive-input");
+  assert.equal(calls, 0);
+});
+
+test("does not treat short lexical token fields or prose about passwords as credentials", async () => {
+  const result = await reviewAgentAction({
+    client: clientWithAnswers(0.9, 0.9, 0.01),
+    policy,
+    request: {
+      ...request,
+      action: {
+        tool: "Editor",
+        input: { token: "identifier", text: "Document the password field without including a value." },
+      },
+    },
+  });
+  assert.equal(result.outcome, "allow");
+});
+
 test("defers before network when no actual user context is available", async () => {
   let calls = 0;
   const client = new JevClient({
@@ -134,4 +172,35 @@ test("rejects runtime input that does not match the published request schema", a
     policy,
     request: { ...request, unexpected: true } as AgentReviewRequest,
   }), /unsupported fields/);
+});
+
+test("evaluates labeled permission fixtures and identifies false allows and false defers", async () => {
+  const result = await evaluateAgentReviewFixtures({
+    client: clientWithAnswers(0.9, 0.9, 0.01),
+    policy,
+    fixtures: [
+      { id: "expected-allow", request, expected: "allow" },
+      { id: "false-allow", request: { ...request, requestId: "different-case" }, expected: "defer" },
+    ],
+  });
+
+  assert.equal(result.total, 2);
+  assert.equal(result.correct, 1);
+  assert.equal(result.accuracy, 0.5);
+  assert.deepEqual(result.falseAllowFixtureIds, ["false-allow"]);
+  assert.deepEqual(result.falseDeferFixtureIds, []);
+  assert.equal(result.providerCalls, 2);
+  assert.deepEqual(result.usage, { inputTokens: 40, outputTokens: 6 });
+  assert.equal(result.results[0]?.reason, "policy-allowed");
+});
+
+test("rejects duplicate permission fixture ids before the duplicate is evaluated", async () => {
+  await assert.rejects(evaluateAgentReviewFixtures({
+    client: clientWithAnswers(0.9, 0.9, 0.01),
+    policy,
+    fixtures: [
+      { id: "duplicate", request, expected: "allow" },
+      { id: "duplicate", request, expected: "allow" },
+    ],
+  }), /duplicate fixture id/);
 });
