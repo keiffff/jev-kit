@@ -1,6 +1,6 @@
 {
   "name": "@jev-kit/decision-eval",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Measure false positives and false negatives on labeled decision fixtures.",
   "license": "MIT",
   "type": "module",

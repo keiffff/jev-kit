@@ -1,6 +1,6 @@
 {
   "name": "@jev-kit/decision-contract",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Define versioned Jev decisions and validate responses against their exact runtime contract.",
   "license": "MIT",
   "type": "module",
