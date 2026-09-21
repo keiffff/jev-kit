@@ -5,6 +5,8 @@
   "references": [
     { "path": "../agent-review" },
     { "path": "../decision-contract" },
-    { "path": "../hook-adapters" }
+    { "path": "../evidence-check" },
+    { "path": "../hook-adapters" },
+    { "path": "../semantic-diff" }
   ]
 }

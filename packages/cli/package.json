@@ -1,7 +1,7 @@
 {
   "name": "@jev-kit/cli",
   "version": "0.1.1",
-  "description": "Run Jev Kit agent review over JSON stdin for hooks, scripts and non-TypeScript agents.",
+  "description": "Run Jev Kit agent review, evidence checks and semantic diffs from hooks, scripts and non-TypeScript applications.",
   "license": "MIT",
   "type": "module",
   "repository": { "type": "git", "url": "git+https://github.com/keiffff/jev-kit.git", "directory": "packages/cli" },
@@ -10,12 +10,18 @@
   "engines": { "node": ">=22.6" },
   "publishConfig": { "access": "public", "registry": "https://registry.npmjs.org/" },
   "files": ["dist/**/*.js", "dist/**/*.d.ts", "dist/**/*.map"],
-  "bin": { "jev-agent-review": "./dist/cli.js" },
+  "bin": {
+    "jev-agent-review": "./dist/cli.js",
+    "jev-kit-evidence-check": "./dist/evidence-cli.js",
+    "jev-kit-semantic-diff": "./dist/semantic-diff-cli.js"
+  },
   "exports": { ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" } },
   "dependencies": {
     "@jev-kit/agent-review": "workspace:*",
     "@jev-kit/decision-contract": "workspace:*",
-    "@jev-kit/hook-adapters": "workspace:*"
+    "@jev-kit/evidence-check": "workspace:*",
+    "@jev-kit/hook-adapters": "workspace:*",
+    "@jev-kit/semantic-diff": "workspace:*"
   },
   "scripts": { "build": "tsc -b" }
 }

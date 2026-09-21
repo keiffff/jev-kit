@@ -65,7 +65,7 @@ The model call is not the differentiator. The differentiator is the durable boun
 | `@jev-kit/evidence-check` | Measure how supplied evidence supports or contradicts an exact claim |
 | `@jev-kit/agent-review` | Apply a versioned permission-review policy to a normalized agent tool request |
 | `@jev-kit/hook-adapters` | Convert Codex and Claude Code PermissionRequest payloads to and from the normalized protocol |
-| `@jev-kit/cli` | Expose agent review over JSON stdin/stdout for hooks, scripts and non-TypeScript agents |
+| `@jev-kit/cli` | Expose agent review, evidence checks and semantic diffs over JSON stdin/stdout |
 
 `decision-contract`, `decision-router` and `decision-eval` are domain-independent. `semantic-diff` and `evidence-check` are reusable contract families, not fixed workflows: callers define their own dimensions, axes, IDs and versions. The built-in contracts are usable defaults and examples of the extension model.
 
@@ -108,6 +108,15 @@ Use `--adapter claude-permission` for Claude Code. API credentials remain enviro
 Complete configuration examples are available in [`examples/codex-config.toml`](examples/codex-config.toml) and [`examples/claude-settings.json`](examples/claude-settings.json).
 
 The CLI does not impose an input-length limit or silently retry. `userMessageCount`, when configured, selects how many recent actual user messages the hook adapter supplies and is visible policy rather than a hidden runtime cutoff.
+
+Non-TypeScript callers can use the same contract boundary for evidence checks and semantic diffs:
+
+```sh
+jev-kit-evidence-check < evidence-request.json
+jev-kit-semantic-diff < diff-request.json
+```
+
+These commands measure only the caller-defined axes or dimensions. Thresholds and the resulting application behavior remain owned by the caller.
 
 The sensitive-input preflight walks structured tool input and recognizes credential-bearing fields as well as known token formats and credential-file paths. It is intentionally described as a guard for recognized credentials, not as proof that arbitrary input contains no secret.
 
