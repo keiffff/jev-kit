@@ -1,5 +1,11 @@
 # @jev-kit/cli
 
+## 0.2.0
+
+### Minor Changes
+
+- 7852459: Add JSON stdin/stdout commands for caller-defined evidence checks and semantic diffs.
+
 ## 0.1.1
 
 ### Patch Changes
