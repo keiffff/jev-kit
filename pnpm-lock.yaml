@@ -35,9 +35,15 @@ importers:
       '@jev-kit/decision-contract':
         specifier: workspace:*
         version: link:../decision-contract
+      '@jev-kit/evidence-check':
+        specifier: workspace:*
+        version: link:../evidence-check
       '@jev-kit/hook-adapters':
         specifier: workspace:*
         version: link:../hook-adapters
+      '@jev-kit/semantic-diff':
+        specifier: workspace:*
+        version: link:../semantic-diff
 
   packages/decision-contract:
     dependencies:

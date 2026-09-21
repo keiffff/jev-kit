@@ -7,6 +7,8 @@ import { join } from "node:path";
 import test from "node:test";
 
 const CLI = new URL("../dist/cli.js", import.meta.url).pathname;
+const EVIDENCE_CLI = new URL("../dist/evidence-cli.js", import.meta.url).pathname;
+const SEMANTIC_DIFF_CLI = new URL("../dist/semantic-diff-cli.js", import.meta.url).pathname;
 
 test("runs a Codex-compatible permission review end to end", async () => {
   const directory = await mkdtemp(join(tmpdir(), "jev-kit-cli-"));
@@ -107,6 +109,62 @@ test("returns normalized defer JSON for sensitive input without a provider call"
   assert.equal(JSON.parse(result.stdout).reason, "sensitive-input");
 });
 
+test("runs a caller-defined evidence check over JSON stdin", async () => {
+  const { baseUrl, close, getRequest } = await startJevServer({
+    claim_supported: { type: "noul", noul: 0.93 },
+  });
+  try {
+    const result = await runJsonCli(EVIDENCE_CLI, {
+      schemaVersion: 1,
+      evidence: { test: "passed" },
+      claim: "The test passed.",
+      contract: {
+        id: "test.evidence",
+        version: "1",
+        axes: [{ id: "claim_supported", instructions: "Does the evidence support the exact claim?" }],
+      },
+      model: "jev-test",
+    }, { TYPESAFE_API_KEY: "test-key", TYPESAFE_BASE_URL: baseUrl });
+    assert.equal(result.code, 0, result.stderr);
+    const output = JSON.parse(result.stdout);
+    assert.equal(output.status, "evaluated");
+    assert.equal(output.scores.claim_supported, 0.93);
+    assert.equal(getRequest().state.proposed_claim, "The test passed.");
+    assert.deepEqual(Object.keys(getRequest().questions), ["claim_supported"]);
+  } finally {
+    await close();
+  }
+});
+
+test("runs a caller-defined semantic diff over JSON stdin", async () => {
+  const { baseUrl, close, getRequest } = await startJevServer({
+    material_violation: { type: "noul", noul: 0.08 },
+    layout_changed: { type: "noul", noul: 0.87 },
+  });
+  try {
+    const result = await runJsonCli(SEMANTIC_DIFF_CLI, {
+      schemaVersion: 1,
+      before: { requirements: ["Keep the layout"] },
+      after: { artifact: "candidate" },
+      contract: {
+        id: "test.artifact",
+        version: "1",
+        dimensions: [
+          { id: "material_violation", instructions: "Does the candidate violate a requirement?" },
+          { id: "layout_changed", instructions: "Did the layout change?" },
+        ],
+      },
+    }, { TYPESAFE_API_KEY: "test-key", TYPESAFE_BASE_URL: baseUrl });
+    assert.equal(result.code, 0, result.stderr);
+    const output = JSON.parse(result.stdout);
+    assert.equal(output.status, "evaluated");
+    assert.deepEqual(output.scores, { material_violation: 0.08, layout_changed: 0.87 });
+    assert.deepEqual(Object.keys(getRequest().questions), ["material_violation", "layout_changed"]);
+  } finally {
+    await close();
+  }
+});
+
 async function runCli(
   args: readonly string[],
   input: unknown,
@@ -123,4 +181,54 @@ async function runCli(
   child.stderr.setEncoding("utf8").on("data", (chunk) => { stderr += chunk; });
   const code = await new Promise<number | null>((resolve) => child.on("close", resolve));
   return { code, stdout, stderr };
+}
+
+async function runJsonCli(
+  executable: string,
+  input: unknown,
+  env: Record<string, string>,
+): Promise<{ code: number | null; stdout: string; stderr: string }> {
+  const child = spawn(process.execPath, [executable], {
+    env: { ...process.env, ...env },
+    stdio: ["pipe", "pipe", "pipe"],
+  });
+  child.stdin.end(JSON.stringify(input));
+  let stdout = "";
+  let stderr = "";
+  child.stdout.setEncoding("utf8").on("data", (chunk) => { stdout += chunk; });
+  child.stderr.setEncoding("utf8").on("data", (chunk) => { stderr += chunk; });
+  const code = await new Promise<number | null>((resolve) => child.on("close", resolve));
+  return { code, stdout, stderr };
+}
+
+async function startJevServer(answers: Record<string, unknown>): Promise<{
+  baseUrl: string;
+  close: () => Promise<void>;
+  getRequest: () => any;
+}> {
+  let received: any;
+  const server = createServer((request, response) => {
+    let body = "";
+    request.setEncoding("utf8");
+    request.on("data", (chunk) => { body += chunk; });
+    request.on("end", () => {
+      received = JSON.parse(body);
+      const output = JSON.stringify({
+        model: "jev-test",
+        usage: { input_tokens: 20, output_tokens: 2 },
+        answers,
+      });
+      response.writeHead(200, { "content-type": "application/json", "content-length": Buffer.byteLength(output) });
+      response.end(output);
+    });
+  });
+  await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
+  const address = server.address();
+  assert.notEqual(address, null);
+  const port = typeof address === "object" && address !== null ? address.port : 0;
+  return {
+    baseUrl: `http://127.0.0.1:${port}`,
+    close: () => new Promise<void>((resolve, reject) => server.close((error) => error ? reject(error) : resolve())),
+    getRequest: () => received,
+  };
 }

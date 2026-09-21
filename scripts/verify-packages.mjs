@@ -32,7 +32,11 @@ try {
     requireEntry(entries, "package/LICENSE", manifest.name);
     requireEntry(entries, "package/dist/index.js", manifest.name);
     requireEntry(entries, "package/dist/index.d.ts", manifest.name);
-    if (manifest.name === "@jev-kit/cli") requireEntry(entries, "package/dist/cli.js", manifest.name);
+    if (manifest.name === "@jev-kit/cli") {
+      requireEntry(entries, "package/dist/cli.js", manifest.name);
+      requireEntry(entries, "package/dist/evidence-cli.js", manifest.name);
+      requireEntry(entries, "package/dist/semantic-diff-cli.js", manifest.name);
+    }
     if (manifest.name === "@jev-kit/agent-review") {
       requireEntry(entries, "package/schemas/review-request.schema.json", manifest.name);
       requireEntry(entries, "package/schemas/review-result.schema.json", manifest.name);
@@ -66,6 +70,14 @@ try {
   const cliResult = spawnSync(cli, [], { cwd: smokeDirectory, encoding: "utf8" });
   if (cliResult.status !== 2 || !cliResult.stderr.includes("--adapter is required")) {
     fail(`CLI smoke test failed: ${cliResult.stderr || cliResult.stdout}`);
+  }
+  for (const binary of ["jev-kit-evidence-check", "jev-kit-semantic-diff"]) {
+    const result = spawnSync(join(smokeDirectory, "node_modules", ".bin", binary), [], {
+      cwd: smokeDirectory, encoding: "utf8",
+    });
+    if (result.status !== 2 || !result.stderr.includes("stdin must contain one JSON document")) {
+      fail(`${binary} smoke test failed: ${result.stderr || result.stdout}`);
+    }
   }
 
   process.stdout.write(`verified ${tarballs.length} package tarballs\n`);
