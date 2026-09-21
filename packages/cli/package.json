@@ -1,6 +1,6 @@
 {
   "name": "@jev-kit/cli",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Run Jev Kit agent review, evidence checks and semantic diffs from hooks, scripts and non-TypeScript applications.",
   "license": "MIT",
   "type": "module",
