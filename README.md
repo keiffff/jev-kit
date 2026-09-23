@@ -38,7 +38,7 @@ The package solves concrete failure modes:
 | A prompt changes while keeping the same name | Contract fingerprints make changed semantics observable; `assertContractVersioning` rejects reuse of the same ID and version when stored and current identities are compared |
 | Missing, extra or out-of-range output reaches control flow | Runtime validation rejects responses that do not exactly match the requested contract |
 | Low confidence is accidentally treated as permission or denial | Routing must select a named path or return an explicit defer result |
-| A stricter policy looks safer but blocks routine work | Labeled cases identify the exact false-allow and false-defer cases and report their scores and provider usage |
+| A stricter policy looks safer but blocks routine work | Compare current and candidate policies on separate calibration and holdout fixtures before changing production routing |
 
 ## Why not call Jev directly?
 
@@ -49,7 +49,7 @@ A direct Jev call is sufficient when the result is advisory or consumed immediat
 | A prompt and parsed output are usually coupled to one call site | Questions have a contract ID, version and deterministic content fingerprint |
 | Missing, extra or malformed fields can reach application code | Responses are checked against the exact requested keys, answer types and numeric ranges |
 | Thresholds and fallback behavior tend to disappear into prompt or glue code | The caller must select a path or defer explicitly |
-| A prompt change is difficult to compare with the previous behavior | Labeled fixtures expose false positives and false negatives at caller-owned thresholds |
+| A policy change is difficult to compare with the previous behavior | The same labeled observations expose selection rate, false allows and false defers for every candidate on calibration and holdout fixtures |
 | Provider retry behavior may be implicit | One library call makes one model attempt; retries are disabled |
 
 The model call is not the differentiator. The differentiator is the durable boundary around it: normalized input, identifiable semantics, runtime conformance, explicit control flow and measurable behavior.
@@ -159,19 +159,26 @@ The numeric policy belongs to the application. `jev-kit` does not invent a globa
 ## Evaluate a contract
 
 ```ts
-import { evaluateThreshold } from "@jev-kit/decision-eval";
+import { compareDecisionPolicies } from "@jev-kit/decision-eval";
 
-const report = evaluateThreshold([
-  { id: "read-list", expected: true, observed: 0.94 },
-  { id: "write-update", expected: false, observed: 0.08 },
-  { id: "ambiguous-script", expected: false, observed: 0.73 },
-], 0.8);
+const comparison = compareDecisionPolicies({
+  calibrationFixtures,
+  holdoutFixtures,
+  candidates: [
+    { id: "current", policy: { aligned: 0.70, risk: 0.15 } },
+    { id: "candidate", policy: { aligned: 0.60, risk: 0.15 } },
+  ],
+  decide: (scores, policy) => (
+    scores.aligned >= policy.aligned && scores.risk <= policy.risk
+  ),
+});
 
-console.log(report.falsePositiveFixtureIds);
-console.log(report.falseNegativeFixtureIds);
+for (const candidate of comparison.candidates) {
+  console.log(candidate.id, candidate.calibration, candidate.holdout);
+}
 ```
 
-The evaluator reports what a supplied threshold does to known cases. It can also compare multi-score policy candidates on separate calibration and holdout fixtures, including selection rate, selected-result precision, false allows and false defers. Repeated runs can be summarized by score range so model variation is visible. It deliberately does not select a candidate, change a runtime policy or declare a threshold acceptable; those remain product decisions.
+The evaluator compares the same caller-owned policies on cases used for calibration and on separate cases that were not used to shape them. Each result includes selection rate, selected-result precision, false allows, false defers and per-fixture observations. `evaluateThreshold` remains available for a single binary score, while `summarizeScoreVariation` reports how repeated evaluations of the same fixture move. The package does not select a candidate, change a runtime policy or declare a threshold acceptable; those remain product decisions.
 
 Permission policies can be measured at their final `allow`/`defer` boundary with `evaluateAgentReviewFixtures`. It reports false-allow and false-defer fixture IDs so a team can compare policy versions on its own labeled requests before changing production routing. See the [calibration workflow](evals/agent-review/README.md) for the fixture format and live evaluation command; replace the example labels with decisions owned by the adopting team.
 
