@@ -60,7 +60,7 @@ The model call is not the differentiator. The differentiator is the durable boun
 | --- | --- |
 | `@jev-kit/decision-contract` | Define versioned Jev decisions and validate responses against the exact contract |
 | `@jev-kit/decision-router` | Route an application to a named path or return an explicit defer reason |
-| `@jev-kit/decision-eval` | Measure false positives and false negatives on labeled decision fixtures |
+| `@jev-kit/decision-eval` | Compare caller-owned thresholds and policies on separate calibration and holdout fixtures |
 | `@jev-kit/semantic-diff` | Detect caller-defined semantic changes between a baseline and candidate |
 | `@jev-kit/evidence-check` | Measure how supplied evidence supports or contradicts an exact claim |
 | `@jev-kit/agent-review` | Apply a versioned permission-review policy to a normalized agent tool request |
@@ -156,7 +156,7 @@ const result = await routeDecision({
 
 The numeric policy belongs to the application. `jev-kit` does not invent a global confidence cutoff, retry, approval or fallback action.
 
-## Calibrate a contract
+## Evaluate a contract
 
 ```ts
 import { evaluateThreshold } from "@jev-kit/decision-eval";
@@ -171,7 +171,7 @@ console.log(report.falsePositiveFixtureIds);
 console.log(report.falseNegativeFixtureIds);
 ```
 
-The evaluator reports what a supplied threshold does to known cases. It deliberately does not declare a threshold acceptable; that is product policy.
+The evaluator reports what a supplied threshold does to known cases. It can also compare multi-score policy candidates on separate calibration and holdout fixtures, including selection rate, selected-result precision, false allows and false defers. Repeated runs can be summarized by score range so model variation is visible. It deliberately does not select a candidate, change a runtime policy or declare a threshold acceptable; those remain product decisions.
 
 Permission policies can be measured at their final `allow`/`defer` boundary with `evaluateAgentReviewFixtures`. It reports false-allow and false-defer fixture IDs so a team can compare policy versions on its own labeled requests before changing production routing. See the [calibration workflow](evals/agent-review/README.md) for the fixture format and live evaluation command; replace the example labels with decisions owned by the adopting team.
 
