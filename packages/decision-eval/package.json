@@ -1,7 +1,7 @@
 {
   "name": "@jev-kit/decision-eval",
   "version": "0.1.0",
-  "description": "Measure false positives and false negatives on labeled decision fixtures.",
+  "description": "Compare decision policies on labeled calibration and holdout fixtures.",
   "license": "MIT",
   "type": "module",
   "repository": { "type": "git", "url": "git+https://github.com/keiffff/jev-kit.git", "directory": "packages/decision-eval" },
