@@ -1,6 +1,6 @@
 {
   "name": "@jev-kit/decision-eval",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Compare decision policies on labeled calibration and holdout fixtures.",
   "license": "MIT",
   "type": "module",
