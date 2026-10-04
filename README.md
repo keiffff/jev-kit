@@ -103,7 +103,11 @@ jev-agent-review \
   --status-file ~/.codex/hook-state/jev-permission-review/status.json
 ```
 
-Use `--adapter claude-permission` for Claude Code. API credentials remain environment-owned; the policy file contains no secret. Status aggregation stores the outcome, contract, scores and tool name, never the raw tool input or conversation.
+Use `--adapter claude-permission` for Claude Code. API credentials remain environment-owned; the policy file contains no secret. Status aggregation stores the outcome, contract, scores, tool name, elapsed milliseconds, returned model and token usage, never the raw tool input or conversation. Existing reason counts are preserved; usage absent from a response or historical record stays unknown rather than becoming zero.
+
+With `--status-file`, the CLI also appends start and finish events to `<status-file>.jsonl`. An attempt ID pairs the two events; config, input and normalization errors record their stage and error type without raw error text. Use this journal for period-based totals and concurrent attempts, because the convenience aggregate is a read-modify-write snapshot. A start without a finish means completion was not recorded, not a proven timeout. Recording failures do not change stdout, permission decisions or exit behavior.
+
+Timing covers the CLI invocation, not credential injection before launch or downstream approval. Failures before valid CLI arguments are parsed or before the process starts are outside this journal. Monetary cost is not returned by this API; calculate it from recorded model and token usage only with a verified applicable price. The journal does not reconstruct earlier missing measurements.
 
 Complete configuration examples are available in [`examples/codex-config.toml`](examples/codex-config.toml) and [`examples/claude-settings.json`](examples/claude-settings.json).
 
