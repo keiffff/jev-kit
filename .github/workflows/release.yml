@@ -14,15 +14,24 @@ on:
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
 permissions:
-  contents: write
-  pull-requests: write
+  contents: read
   id-token: write
 
 jobs:
   release:
     runs-on: ubuntu-latest
     steps:
+      - name: Create release App token
+        id: release-token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ vars.RELEASE_APP_CLIENT_ID }}
+          private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
+          permission-contents: write
+          permission-pull-requests: write
       - uses: actions/checkout@v6
+        with:
+          token: ${{ steps.release-token.outputs.token }}
       - uses: pnpm/action-setup@v6
       - uses: actions/setup-node@v6
         with:
@@ -32,11 +41,19 @@ jobs:
       - run: npm install --global npm@11.19.1
       - run: pnpm install --frozen-lockfile
       - uses: changesets/action@v2
+        id: changesets
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ steps.release-token.outputs.token }}
           version-script: pnpm version-packages
           publish-script: pnpm release
           commit-message: "chore: release packages"
           pr-title: "chore: release packages"
           create-github-releases: true
           push-git-tags: true
+      - name: Enable release PR auto-merge
+        if: steps.changesets.outputs.pr-number != ''
+        env:
+          GH_TOKEN: ${{ steps.release-token.outputs.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_PR_NUMBER: ${{ steps.changesets.outputs.pr-number }}
+        run: gh pr merge "$RELEASE_PR_NUMBER" --auto --squash

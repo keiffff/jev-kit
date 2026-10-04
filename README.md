@@ -220,4 +220,15 @@ Published packages use Changesets. A pull request that changes a public package 
 pnpm changeset
 ```
 
-After changes reach `main`, the release workflow maintains a reviewable version PR. Merging that PR publishes the pending packages to npm through GitHub Actions trusted publishing and records package-specific changelogs and tags. The repository stores no npm publishing token.
+After changes reach `main`, the release workflow maintains a reviewable version PR and enables squash auto-merge for that PR. GitHub merges it only after the existing branch rules are satisfied, including a successful `verify` check, an up-to-date branch and resolved review threads. Merging that PR publishes the pending packages to npm through GitHub Actions trusted publishing and records package-specific changelogs and tags. The repository stores no npm publishing token.
+
+### Release automation setup
+
+1. Create a GitHub App with repository permissions **Contents: Read and write** and **Pull requests: Read and write**. Install it on `keiffff/jev-kit`. Do not add it to the branch ruleset's bypass list.
+2. In the repository's **Settings > Secrets and variables > Actions**, add the App's client ID as the repository variable `RELEASE_APP_CLIENT_ID` and its generated private key as the repository secret `RELEASE_APP_PRIVATE_KEY`. Upload the key directly to GitHub; do not commit it or paste it into a chat.
+3. In **Settings > General > Pull Requests**, enable **Allow auto-merge**. Keep the existing `main` branch rules and npm trusted-publishing configuration unchanged.
+4. Configure these settings before merging the workflow change. Without the App credentials, the release workflow cannot create its token and will fail before versioning or publishing.
+
+The workflow uses a short-lived App installation token for release PR creation, updates and auto-merge. Unlike the workflow's built-in `GITHUB_TOKEN`, this token allows PR CI to start without manual workflow approval and lets the merge trigger the `push` workflow that publishes packages. npm authentication still uses GitHub Actions OIDC, not the App token.
+
+Only the PR number returned by Changesets is passed to the auto-merge command; ordinary feature PRs are not automatically merged. Failed checks or an out-of-date release branch continue to block merging under the existing rules. The release workflow retains its path filters, so unrelated changes to `main` do not refresh a pending release PR; if that leaves it out of date, update the release branch before it can merge.
