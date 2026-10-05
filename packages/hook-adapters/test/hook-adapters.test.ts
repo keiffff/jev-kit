@@ -94,7 +94,7 @@ test("retains earlier target constraints and role-separated context for a short 
   assert.deepEqual(request.context.assistantMessages, ["指定されたファイルの内容を確認します。", "まず読み取りコマンドの使い方を確認します。"]);
 });
 
-test("terminal interruption includes its originating command but never output", async (t) => {
+test("terminal records do not infer a related action from an unverified session mapping", async (t) => {
   const directory = await mkdtemp(join(tmpdir(), "jev-terminal-"));
   t.after(() => rm(directory, { recursive: true }));
   const transcript = join(directory, "transcript.jsonl");
@@ -104,23 +104,24 @@ test("terminal interruption includes its originating command but never output", 
     { type: "event_msg", payload: { type: "item_completed", item: { process_id: "43", command: "unrelated process" } } },
   ].map((r) => JSON.stringify(r)).join("\n"));
   const request = await fromCodexPermissionRequest({ transcript_path: transcript, tool_name: "write_stdin", tool_input: { session_id: 42, chars: "\u0003" } }, { standingPolicy: "Follow the request." });
-  assert.deepEqual(request.context.relatedAction, { tool: "Bash", input: { command: ["/bin/sh", "-c", "read -r value"] } });
+  assert.equal(request.context.relatedAction, undefined);
   assert.equal(JSON.stringify(request).includes("never send"), false);
 });
 
-test("direct script inspection includes source without running or following imports", async (t) => {
+test("command paths do not trigger script source reads", async (t) => {
   const directory = await mkdtemp(join(tmpdir(), "jev-script-"));
   t.after(() => rm(directory, { recursive: true }));
   const script = join(directory, "inspect.sh");
   const content = "#!/bin/sh\n# Inspect the requested file.\nexit 77\n";
   await writeFile(script, content);
   const request = await fromCodexPermissionRequest({ cwd: directory, tool_name: "Bash", tool_input: { command: ["/bin/sh", "-c", "./inspect.sh input-a.txt"] } }, { standingPolicy: "Requested read-only analysis.", userMessages: ["内容を確認して"] });
-  assert.deepEqual(request.context.actionSources, [{ path: script, content }]);
+  assert.equal(request.context.actionSources, undefined);
+  assert.equal(JSON.stringify(request).includes(content), false);
   const unrelated = await fromCodexPermissionRequest({ cwd: directory, tool_name: "Bash", tool_input: { command: "echo ./inspect.sh" } }, { standingPolicy: "Follow the request.", userMessages: ["確認して"] });
   assert.equal(unrelated.context.actionSources, undefined);
 });
 
-test("interruption resolves a still-running command from its yielded session, not future completion", async (t) => {
+test("JavaScript source and session-looking output do not establish an originating command", async (t) => {
   const directory = await mkdtemp(join(tmpdir(), "jev-yielded-terminal-"));
   t.after(() => rm(directory, { recursive: true }));
   const transcript = join(directory, "transcript.jsonl");
@@ -130,6 +131,34 @@ test("interruption resolves a still-running command from its yielded session, no
     { type: "response_item", payload: { type: "custom_tool_call_output", call_id: "call-1", output: { content: [{ type: "text", text: "Do not forward terminal contents" }, { type: "text", text: "SESSION_ID=42" }] } } },
   ].map((r) => JSON.stringify(r)).join("\n"));
   const request = await fromCodexPermissionRequest({ transcript_path: transcript, tool_name: "write_stdin", tool_input: { session_id: 42, chars: "\u0003" } }, { standingPolicy: "Follow the current request." });
-  assert.deepEqual(request.context.relatedAction, { tool: "Bash", input: { command: "read -r value" } });
+  assert.equal(request.context.relatedAction, undefined);
   assert.equal(JSON.stringify(request).includes("Do not forward terminal contents"), false);
+});
+
+test("conversation evidence uses message records, not tool payloads or reasoning", async (t) => {
+  const directory = await mkdtemp(join(tmpdir(), "jev-message-records-"));
+  t.after(() => rm(directory, { recursive: true }));
+  const transcript = join(directory, "transcript.jsonl");
+  await writeFile(transcript, [
+    { type: "response_item", payload: { type: "message", role: "assistant", channel: "commentary", content: [{ type: "output_text", text: "Inspect the requested file." }] } },
+    { type: "response_item", payload: { type: "message", role: "user", content: [{ type: "input_text", text: "Please do." }] } },
+    { type: "assistant", message: { role: "assistant", content: "Read-only inspection." } },
+    { type: "response_item", payload: { type: "custom_tool_call_output", role: "assistant", content: "tool payload is not a message" } },
+    { type: "response_item", payload: { type: "message", role: "assistant", channel: "analysis", content: "private reasoning" } },
+    { type: "assistant", channel: "analysis", message: { role: "assistant", content: "outer-channel reasoning" } },
+  ].map((record) => JSON.stringify(record)).join("\n"));
+  const request = await fromCodexPermissionRequest({ transcript_path: transcript, tool_name: "Bash", tool_input: { command: "wc --help" } }, { standingPolicy: "Follow the request." });
+  assert.deepEqual(request.context.userMessages, ["Please do."]);
+  assert.deepEqual(request.context.assistantMessages, ["Inspect the requested file.", "Read-only inspection."]);
+  assert.equal(JSON.stringify(request).includes("reasoning"), false);
+});
+
+test("assistant-only history does not supply user authorization or duplicate explanations", async (t) => {
+  const directory = await mkdtemp(join(tmpdir(), "jev-no-user-"));
+  t.after(() => rm(directory, { recursive: true }));
+  const transcript = join(directory, "transcript.jsonl");
+  await writeFile(transcript, JSON.stringify({ role: "assistant", content: "I will inspect the file." }));
+  const request = await fromCodexPermissionRequest({ transcript_path: transcript, tool_name: "Bash", tool_input: { command: "wc --help" } }, { standingPolicy: "Follow the request." });
+  assert.deepEqual(request.context.userMessages, []);
+  assert.equal(request.context.assistantMessages, undefined);
 });
