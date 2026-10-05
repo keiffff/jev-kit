@@ -69,9 +69,16 @@ async function fromPermissionHook(
   const toolInput = hook.tool_input;
   assertJsonValue(toolInput, "hook input.tool_input");
   const transcriptPath = typeof hook.transcript_path === "string" ? hook.transcript_path : "";
-  const userMessages = options.userMessages === undefined
-    ? await readLatestUserMessages(transcriptPath, options.userMessageCount)
-    : [...options.userMessages];
+  let conversation: Pick<AgentReviewRequest["context"], "userMessages" | "previousUserMessages" | "assistantMessages">;
+  if (options.userMessages !== undefined) {
+    conversation = { userMessages: [...options.userMessages] };
+  } else {
+    let transcript = "";
+    if (transcriptPath !== "") {
+      try { transcript = await readFile(transcriptPath, "utf8"); } catch { /* Same unavailable-context behavior as readLatestUserMessages. */ }
+    }
+    conversation = permissionConversation(transcript, options.userMessageCount);
+  }
   const description = typeof toolInput === "object" && toolInput !== null && !Array.isArray(toolInput)
     ? stringField(toolInput, "description") ?? stringField(toolInput, "justification")
     : undefined;
@@ -82,7 +89,7 @@ async function fromPermissionHook(
     event: { name: "permission-request" },
     action: { tool: toolName, input: toolInput, ...(description === undefined ? {} : { description }) },
     context: {
-      userMessages,
+      ...conversation,
       standingPolicy: nonempty(options.standingPolicy, "standing policy"),
       ...(typeof hook.cwd === "string" ? { cwd: hook.cwd } : {}),
     },
@@ -92,7 +99,46 @@ async function fromPermissionHook(
 const SYNTHETIC_PREFIXES = [
   "# AGENTS.md instructions", "<app-context>", "<skills_instructions>",
   "<permissions instructions>", "<environment_context>", "The following is the Codex agent history",
+  "<external_codex_apps_open_page>",
 ];
+
+/** Keep user requests and assistant explanations separate; neither implies new authorization. */
+function permissionConversation(transcript: string, limit: number | undefined):
+  Pick<AgentReviewRequest["context"], "userMessages" | "previousUserMessages" | "assistantMessages"> {
+  const allUsers = extractLatestUserMessages(transcript);
+  const userMessages = extractLatestUserMessages(transcript, limit);
+  const previousUserMessages = allUsers.slice(0, allUsers.length - userMessages.length);
+  const messages: { role: string; text: string }[] = [];
+  for (const line of transcript.split(/\r?\n/)) {
+    let entry: Record<string, unknown> | undefined;
+    try { entry = maybeRecord(JSON.parse(line)); } catch { continue; }
+    if (entry === undefined) continue;
+    const user = extractUserMessage(entry);
+    if (user !== undefined && isActualUserMessage(user)) messages.push({ role: "user", text: user });
+    const payload = maybeRecord(entry.payload);
+    const message = entry.type === "response_item"
+      ? payload?.type === "message" ? payload : undefined
+      : maybeRecord(entry.message) ?? entry;
+    if (message?.role === "assistant" && message.channel !== "analysis" && entry.channel !== "analysis") {
+      const text = contentText(message.content);
+      if (text) messages.push({ role: "assistant", text });
+    }
+  }
+  let latestUser = -1;
+  for (let index = messages.length - 1; index >= 0; index -= 1) {
+    if (messages[index].role === "user") { latestUser = index; break; }
+  }
+  const beforeUser = latestUser < 0 ? undefined
+    : messages.slice(0, latestUser).reverse().find((message) => message.role === "assistant");
+  const afterUser = latestUser < 0 ? undefined
+    : messages.slice(latestUser + 1).reverse().find((message) => message.role === "assistant");
+  const assistantMessages = [beforeUser, afterUser].flatMap((message) => message === undefined ? [] : [message.text]);
+  return {
+    userMessages,
+    ...(previousUserMessages.length === 0 ? {} : { previousUserMessages }),
+    ...(assistantMessages.length === 0 ? {} : { assistantMessages }),
+  };
+}
 
 function isActualUserMessage(text: string): boolean {
   const stripped = text.trimStart();

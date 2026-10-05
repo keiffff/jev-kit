@@ -95,6 +95,36 @@ test("checks the complete outbound request for sensitive values", async () => {
   assert.equal(calls, 0);
 });
 
+test("new conversation and source evidence cannot send secrets to the provider", async () => {
+  let calls = 0;
+  const client = new JevClient({ apiKey: "test-key", fetch: async () => { calls += 1; return Response.json({}); } });
+  const evidence = [
+    { previousUserMessages: ["Authorization: Bearer abcdefghijklmnop"] },
+    { assistantMessages: ["Authorization: Bearer abcdefghijklmnop"] },
+    { relatedAction: { tool: "Bash", input: { password: "abcdefghijk" } } },
+    { actionSources: [{ path: "/tmp/query.zsh", content: "Authorization: Bearer abcdefghijklmnop" }] },
+  ];
+  for (const context of evidence) {
+    const result = await reviewAgentAction({ client, policy, request: { ...request, context: { ...request.context, ...context } } });
+    assert.equal(result.reason, "sensitive-input");
+  }
+  assert.equal(calls, 0);
+});
+
+test("forwards historical constraints as evidence without changing score routing", async () => {
+  let state: unknown;
+  const client = new JevClient({ apiKey: "test-key", fetch: async (_url, options) => {
+    state = JSON.parse(String(options?.body));
+    return Response.json({ model: "jev-test", usage: { input_tokens: 20, output_tokens: 3 }, answers: {
+      policy_compliant: { type: "noul", noul: 0.6 }, instruction_aligned: { type: "noul", noul: 0.4 }, high_risk: { type: "noul", noul: 0.1 },
+    } });
+  } });
+  const context = { ...request.context, previousUserMessages: ["Inspect only /workspace/input-a.txt."], assistantMessages: ["I will inspect the specified file."], userMessages: ["お願いします"] };
+  const result = await reviewAgentAction({ client, policy, request: { ...request, context } });
+  assert.equal(result.outcome, "defer");
+  assert.ok(JSON.stringify(state).includes("Inspect only /workspace/input-a.txt."));
+});
+
 test("detects secrets stored under structured credential keys", async () => {
   let calls = 0;
   const client = new JevClient({
