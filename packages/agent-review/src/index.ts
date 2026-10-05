@@ -16,6 +16,10 @@ export interface AgentReviewRequest {
   };
   readonly context: {
     readonly userMessages: readonly string[];
+    readonly previousUserMessages?: readonly string[];
+    readonly assistantMessages?: readonly string[];
+    readonly relatedAction?: { readonly tool: string; readonly input: JsonValue };
+    readonly actionSources?: readonly { readonly path: string; readonly content: string }[];
     readonly standingPolicy: string;
     readonly cwd?: string;
   };
@@ -250,9 +254,29 @@ export function validateAgentReviewRequest(value: unknown): asserts value is Age
     throw new TypeError("request.action.description must be a string");
   }
   const context = record(request.context, "request.context");
-  assertAllowedKeys(context, ["userMessages", "standingPolicy", "cwd"], "request.context");
+  assertAllowedKeys(context, ["userMessages", "previousUserMessages", "assistantMessages", "relatedAction", "actionSources", "standingPolicy", "cwd"], "request.context");
   if (!Array.isArray(context.userMessages) || context.userMessages.some((item) => typeof item !== "string")) {
     throw new TypeError("request.context.userMessages must be an array of strings");
+  }
+  for (const key of ["previousUserMessages", "assistantMessages"] as const) {
+    if (context[key] !== undefined && (!Array.isArray(context[key]) || context[key].some((item) => typeof item !== "string"))) {
+      throw new TypeError(`request.context.${key} must be an array of strings`);
+    }
+  }
+  if (context.relatedAction !== undefined) {
+    const related = record(context.relatedAction, "request.context.relatedAction");
+    assertAllowedKeys(related, ["tool", "input"], "request.context.relatedAction");
+    assertNonempty(related.tool, "request.context.relatedAction.tool");
+    assertJsonValue(related.input, "request.context.relatedAction.input", new Set());
+  }
+  if (context.actionSources !== undefined) {
+    if (!Array.isArray(context.actionSources)) throw new TypeError("request.context.actionSources must be an array");
+    for (const source of context.actionSources) {
+      const item = record(source, "request.context.actionSources[]");
+      assertAllowedKeys(item, ["path", "content"], "request.context.actionSources[]");
+      assertNonempty(item.path, "request.context.actionSources[].path");
+      if (typeof item.content !== "string") throw new TypeError("request.context.actionSources[].content must be a string");
+    }
   }
   assertNonempty(context.standingPolicy, "request.context.standingPolicy");
   if (context.cwd !== undefined && typeof context.cwd !== "string") {
