@@ -1,5 +1,11 @@
 # @jev-kit/cli
 
+## 0.3.2
+
+### Patch Changes
+
+- 79083c5: Add explicit long-context support to semantic-diff requests and preserve structured API error codes without exposing provider messages or request contents.
+
 ## 0.3.1
 
 ### Patch Changes
