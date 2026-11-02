@@ -43,6 +43,7 @@ export interface SemanticDiffCliInput {
     readonly dimensions: readonly { readonly id: string; readonly instructions: string }[];
   };
   readonly model?: string;
+  readonly longContext?: boolean;
 }
 
 export function parseCliConfig(value: unknown): AgentReviewCliConfig {
@@ -85,6 +86,9 @@ export function parseSemanticDiffInput(value: unknown): SemanticDiffCliInput {
   entryValue(input.after, "input.after");
   if (input.contract !== undefined) parseNamedItemsContract(input.contract, "dimensions", "input.contract");
   if (input.model !== undefined) nonempty(input.model, "input.model");
+  if (input.longContext !== undefined && typeof input.longContext !== "boolean") {
+    throw new TypeError("input.longContext must be a boolean");
+  }
   return value as SemanticDiffCliInput;
 }
 

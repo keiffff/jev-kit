@@ -23,3 +23,15 @@ jev-kit-semantic-diff < diff-request.json
 ```
 
 Both commands make one Jev attempt and validate the response against the exact requested contract. Provider failures return a JSON `unavailable` result; malformed input exits with status 2.
+
+Semantic diff accepts an optional boolean `longContext`. It defaults to `false`.
+Set it to `true` when a complete document comparison needs TypeSafe's
+[long-context mode](https://docs.typesafe.ai/models#long-context). The CLI sends
+the official `TypeSafe-Danger-Zone-Long-Context: true` header through the SDK;
+it does not truncate the sources or retry a failed request. Long context is
+slower and less accurate than the normal context, so it is an explicit choice
+for the calling workflow. Permission and evidence checks are unchanged.
+
+Semantic-diff failures retain `errorKind`, `httpStatus` when provided, and the
+API's structured `errorType` code (for example `max_tokens_exceeded`). Raw
+provider messages, request contents and headers are not included in diagnostics.
