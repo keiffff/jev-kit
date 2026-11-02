@@ -330,6 +330,63 @@ test("runs a caller-defined semantic diff over JSON stdin", async () => {
   }
 });
 
+test("semantic diff explicitly opts into long context without changing source contents", async () => {
+  const before = "<style>.label{color:blue}</style><p>元の説明</p>";
+  const after = { artifact: "<style>.label{color:red}</style><p>更新後の説明</p>" };
+  for (const longContext of [undefined, false, true]) {
+    const { baseUrl, close, getRequest, getHeaders } = await startJevServer({
+      meaning: { type: "noul", noul: 0.1 }, interface: { type: "noul", noul: 0.1 },
+      scope: { type: "noul", noul: 0.1 }, structure: { type: "noul", noul: 0.1 },
+      runtime_behavior: { type: "noul", noul: 0.1 },
+    });
+    try {
+      const result = await runJsonCli(SEMANTIC_DIFF_CLI, {
+        schemaVersion: 1, before, after,
+        ...(longContext === undefined ? {} : { longContext }),
+      }, { TYPESAFE_API_KEY: "test-key", TYPESAFE_BASE_URL: baseUrl });
+      assert.equal(result.code, 0, result.stderr);
+      assert.equal(JSON.parse(result.stdout).status, "evaluated");
+      assert.equal(getHeaders()["typesafe-danger-zone-long-context"], longContext ? "true" : undefined);
+      assert.deepEqual(getRequest().state, { before, after });
+    } finally { await close(); }
+  }
+});
+
+test("semantic diff rejects a non-boolean longContext before contacting the provider", async () => {
+  const result = await runJsonCli(SEMANTIC_DIFF_CLI, {
+    schemaVersion: 1, before: "old", after: "new", longContext: "true",
+  }, { TYPESAFE_API_KEY: "test-key", TYPESAFE_BASE_URL: "http://127.0.0.1:1" });
+  assert.equal(result.code, 2, result.stderr);
+  assert.equal(result.stdout, "");
+  assert.match(result.stderr, /longContext must be a boolean/);
+});
+
+test("semantic diff preserves structured token-limit diagnostics without retrying or leaking provider text", async () => {
+  let calls = 0;
+  const server = createServer((_request, response) => {
+    calls += 1;
+    response.writeHead(400, { "content-type": "application/json" });
+    response.end(JSON.stringify({ detail: { error_type: "max_tokens_exceeded" }, message: "private-provider-text" }));
+  });
+  await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
+  const address = server.address();
+  assert.ok(address !== null && typeof address === "object");
+  try {
+    const result = await runJsonCli(SEMANTIC_DIFF_CLI, {
+      schemaVersion: 1, before: "old", after: "new", longContext: true,
+    }, { TYPESAFE_API_KEY: "test-key", TYPESAFE_BASE_URL: `http://127.0.0.1:${address.port}` });
+    assert.equal(result.code, 0, result.stderr);
+    assert.deepEqual(JSON.parse(result.stdout), {
+      schemaVersion: 1, status: "unavailable", errorKind: "api", httpStatus: 400,
+      errorType: "max_tokens_exceeded",
+    });
+    assert.equal(calls, 1);
+    assert.equal((result.stdout + result.stderr).includes("private-provider-text"), false);
+  } finally {
+    await new Promise<void>((resolve, reject) => server.close(error => error ? reject(error) : resolve()));
+  }
+});
+
 async function runCli(
   args: readonly string[],
   input: unknown,
@@ -370,9 +427,12 @@ async function startJevServer(answers: Record<string, unknown>): Promise<{
   baseUrl: string;
   close: () => Promise<void>;
   getRequest: () => any;
+  getHeaders: () => import("node:http").IncomingHttpHeaders;
 }> {
   let received: any;
+  let receivedHeaders: import("node:http").IncomingHttpHeaders = {};
   const server = createServer((request, response) => {
+    receivedHeaders = request.headers;
     let body = "";
     request.setEncoding("utf8");
     request.on("data", (chunk) => { body += chunk; });
@@ -395,5 +455,6 @@ async function startJevServer(answers: Record<string, unknown>): Promise<{
     baseUrl: `http://127.0.0.1:${port}`,
     close: () => new Promise<void>((resolve, reject) => server.close((error) => error ? reject(error) : resolve())),
     getRequest: () => received,
+    getHeaders: () => receivedHeaders,
   };
 }
