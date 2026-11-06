@@ -1,5 +1,11 @@
 # @jev-kit/agent-review
 
+## 0.3.1
+
+### Patch Changes
+
+- 255ef81: Do not treat configuration filenames mentioned in review context as credential contents. Continue checking every outbound field for secret values and the proposed action input for sensitive file paths.
+
 ## 0.3.0
 
 ### Minor Changes

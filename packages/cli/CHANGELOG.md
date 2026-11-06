@@ -1,5 +1,14 @@
 # @jev-kit/cli
 
+## 0.3.3
+
+### Patch Changes
+
+- Updated dependencies [255ef81]
+- Updated dependencies [255ef81]
+  - @jev-kit/hook-adapters@0.2.1
+  - @jev-kit/agent-review@0.3.1
+
 ## 0.3.2
 
 ### Patch Changes
