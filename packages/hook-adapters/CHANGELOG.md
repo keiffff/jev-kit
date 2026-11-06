@@ -1,5 +1,13 @@
 # @jev-kit/hook-adapters
 
+## 0.2.1
+
+### Patch Changes
+
+- 255ef81: Exclude Claude Code tool-result blocks, injected metadata and compaction summaries from user authorization context. Preserve actual user text in mixed-content messages.
+- Updated dependencies [255ef81]
+  - @jev-kit/agent-review@0.3.1
+
 ## 0.2.0
 
 ### Minor Changes
