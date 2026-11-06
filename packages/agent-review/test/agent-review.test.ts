@@ -95,6 +95,40 @@ test("checks the complete outbound request for sensitive values", async () => {
   assert.equal(calls, 0);
 });
 
+test("configuration filenames in context do not prevent an ordinary requested action", async () => {
+  let calls = 0;
+  const client = new JevClient({ apiKey: "test-key", fetch: async () => {
+    calls += 1;
+    return Response.json({ model: "jev-test", usage: { input_tokens: 20, output_tokens: 3 }, answers: {
+      policy_compliant: { type: "noul", noul: 0.9 },
+      instruction_aligned: { type: "noul", noul: 0.9 },
+      high_risk: { type: "noul", noul: 0.01 },
+    } });
+  } });
+  const result = await reviewAgentAction({ client, policy, request: {
+    ...request,
+    action: { tool: "Bash", input: { command: "cat web/package.json" } },
+    context: { ...request.context,
+      userMessages: ["Review the migration and explain web/.npmrc."],
+      previousUserMessages: ["Do not read /workspace/.env."],
+      assistantMessages: ["I will inspect package settings without opening /workspace/.env."],
+      actionSources: [{ path: "/workspace/docs/.npmrc", content: "The guide documents the configuration filename only." }],
+    },
+  } });
+  assert.equal(result.reason, "policy-allowed");
+  assert.equal(calls, 1);
+});
+
+test("a filename mention does not mask an actual secret in historical context", async () => {
+  let calls = 0;
+  const client = new JevClient({ apiKey: "test-key", fetch: async () => { calls += 1; return Response.json({}); } });
+  const result = await reviewAgentAction({ client, policy, request: { ...request, context: {
+    ...request.context, previousUserMessages: ["Review web/.npmrc. Authorization: Bearer abcdefghijklmnop"],
+  } } });
+  assert.equal(result.reason, "sensitive-input");
+  assert.equal(calls, 0);
+});
+
 test("new conversation and source evidence cannot send secrets to the provider", async () => {
   let calls = 0;
   const client = new JevClient({ apiKey: "test-key", fetch: async () => { calls += 1; return Response.json({}); } });

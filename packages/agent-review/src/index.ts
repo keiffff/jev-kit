@@ -293,10 +293,13 @@ const STRONG_SENSITIVE_KEYS = new Set([
 const AMBIGUOUS_TOKEN_KEYS = new Set(["token"]);
 
 export function containsSensitiveInput(request: AgentReviewRequest): boolean {
-  return containsSensitiveValue(request);
+  // Context paths are descriptions, not file contents. Keep the conservative
+  // path guard on the proposed action while checking actual secret values in
+  // every outbound field, including historical and advisor evidence.
+  return containsSensitiveValue(request) || containsSensitiveValue(request.action.input, undefined, true);
 }
 
-function containsSensitiveValue(value: unknown, key?: string): boolean {
+function containsSensitiveValue(value: unknown, key?: string, checkPaths = false): boolean {
   if (typeof value === "string") {
     const normalizedKey = key?.replace(/[^a-z0-9]/gi, "").toLowerCase();
     if (normalizedKey !== undefined && STRONG_SENSITIVE_KEYS.has(normalizedKey) && value.trim() !== "") return true;
@@ -305,11 +308,11 @@ function containsSensitiveValue(value: unknown, key?: string): boolean {
       && AMBIGUOUS_TOKEN_KEYS.has(normalizedKey)
       && value.trim().length >= 12
     ) return true;
-    return SECRET_RE.test(value) || SENSITIVE_PATH_RE.test(value);
+    return SECRET_RE.test(value) || (checkPaths && SENSITIVE_PATH_RE.test(value));
   }
-  if (Array.isArray(value)) return value.some((item) => containsSensitiveValue(item));
+  if (Array.isArray(value)) return value.some((item) => containsSensitiveValue(item, undefined, checkPaths));
   if (typeof value === "object" && value !== null) {
-    return Object.entries(value).some(([childKey, item]) => containsSensitiveValue(item, childKey));
+    return Object.entries(value).some(([childKey, item]) => containsSensitiveValue(item, childKey, checkPaths));
   }
   return false;
 }

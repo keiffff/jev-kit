@@ -148,14 +148,25 @@ function isActualUserMessage(text: string): boolean {
 function extractUserMessage(value: unknown): string | undefined {
   const entry = maybeRecord(value);
   if (entry === undefined) return undefined;
+  if (entry.isMeta === true || entry.isCompactSummary === true) return undefined;
   const payload = maybeRecord(entry.payload);
   if (entry.type === "response_item" && payload?.type === "message" && payload.role === "user") {
-    return contentText(payload.content);
+    return userContentText(payload.content);
   }
   const message = maybeRecord(entry.message);
-  if (entry.type === "user" && message?.role === "user") return contentText(message.content);
-  if (entry.role === "user") return contentText(entry.content);
+  if (entry.type === "user" && message?.role === "user") return userContentText(message.content);
+  if (entry.role === "user") return userContentText(entry.content);
   return undefined;
+}
+
+/** Tool results can be carried in user-role envelopes but are not human requests. */
+function userContentText(value: unknown): string | undefined {
+  if (typeof value === "string") return value.trim();
+  if (!Array.isArray(value)) return undefined;
+  return contentText(value.filter((part) => {
+    const item = maybeRecord(part);
+    return item?.type === "text" || item?.type === "input_text";
+  }));
 }
 
 function contentText(value: unknown): string | undefined {
